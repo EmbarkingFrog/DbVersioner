@@ -38,7 +38,7 @@ class FileReadUtils {
 
         while ((line = reader.readLine()) != null) {
             if (filter.test(line)) {
-                result.append(line);
+                result.append(line + "\n");
             }
         }
 

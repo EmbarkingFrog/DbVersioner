@@ -170,7 +170,7 @@ public class ScriptDeployer {
     private void cleanViews(Connection connection) throws SQLException {
         logger.info("Cleaning all views:");
         Statement statement = connection.createStatement();
-        String GET_ALL_DROP_VIEWS_QUERY = " SELECT 'DROP VIEW ' || table_name || ';' AS views\n" +
+        String GET_ALL_DROP_VIEWS_QUERY = "  SELECT 'DROP VIEW ' || table_schema || '.' || table_name || ';' AS views\n" +
                 "  FROM information_schema.views\n" +
                 " WHERE table_schema NOT IN ('pg_catalog', 'information_schema')\n" +
                 "   AND table_name !~ '^pg_';";
@@ -178,7 +178,7 @@ public class ScriptDeployer {
         if (!resultSet.isBeforeFirst()) {
             logger.info("No views to clean!");
         }
-        while (resultSet.next()) {
+        while (!resultSet.isClosed() && resultSet.next()) {
             String NEXT_DROP_VIEW_QUERY = resultSet.getString("views");
             logger.info("Executing: {}", NEXT_DROP_VIEW_QUERY);
             statement.execute(NEXT_DROP_VIEW_QUERY);
@@ -201,7 +201,7 @@ public class ScriptDeployer {
         if (!resultSet.isBeforeFirst()) {
             logger.info("No procedures to clean!");
         }
-        while (resultSet.next()) {
+        while (!resultSet.isClosed() && resultSet.next()) {
             String NEXT_DROP_PROCEDURE_QUERY = resultSet.getString("drop_procedure_query");
             logger.info("Executing: {}", NEXT_DROP_PROCEDURE_QUERY);
             statement.execute(NEXT_DROP_PROCEDURE_QUERY);
