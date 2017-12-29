@@ -1,0 +1,16 @@
+filesHandler\SchemaUpdateFile.class
+updateScript\SchemaUpdateScript.class
+main\DbVersioner.class
+main\Properties.class
+dbHandler\ScriptDeploymentException.class
+dbHandler\DatabaseConnector.class
+filesHandler\UpdateFile.class
+main\PropertiesFlagParser$PossibleProperties.class
+updateScript\UpdateScriptUtils.class
+filesHandler\IndexGenerator.class
+filesHandler\FileReadUtils.class
+updateScript\UpdateScript.class
+versions\Version.class
+filesHandler\FilesHandler.class
+main\PropertiesFlagParser.class
+dbHandler\ScriptDeployer.class

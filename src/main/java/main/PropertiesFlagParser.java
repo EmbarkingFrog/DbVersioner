@@ -1,6 +1,7 @@
 package main;
 
 import versions.Version;
+
 import java.util.InvalidPropertiesFormatException;
 import java.util.function.Consumer;
 
@@ -65,29 +66,29 @@ public class PropertiesFlagParser {
     }
 
     private static void validateConnectionPropertiesWereSet() throws InvalidPropertiesFormatException {
-        if (Properties.getDbName() == null){
+        if (Properties.getDbName() == null) {
             throw new InvalidPropertiesFormatException("Database name not provided! Make sure to use the flag: [-db=YOURDBNAME]");
         }
-        if (Properties.dbServer() == null){
+        if (Properties.dbServer() == null) {
             throw new InvalidPropertiesFormatException("Database server not provided! Make sure to use the flag: [-server=IP:PORT]");
         }
-        if (Properties.getUser() == null){
+        if (Properties.getUser() == null) {
             throw new InvalidPropertiesFormatException("Database user-name not provided! Make sure to use the flag [-u=YOURUSERNAME]");
         }
-        if (Properties.getPassword() == null){
+        if (Properties.getPassword() == null) {
             throw new InvalidPropertiesFormatException("Database password not provided! Make sure to use the flag [-p=YOURDPASSWORD]");
         }
     }
 
     private static void validateUserAskedForSomethingToBeInstalled() throws InvalidPropertiesFormatException {
-        if (!Properties.installSchemas() && !Properties.installViews() && !Properties.installStoredProcedures()){
+        if (!Properties.installSchemas() && !Properties.installViews() && !Properties.installStoredProcedures()) {
             throw new InvalidPropertiesFormatException("No installation flag was provided! Use flags [-schemas], [-views] or [-storedprocedures]. Alternatively " +
                     "use [-full] to install all of them.)");
         }
     }
 
-    private static void validateUserProvidedVersionToInstall() throws InvalidPropertiesFormatException{
-        if (Properties.installUpToVersion() == null){
+    private static void validateUserProvidedVersionToInstall() throws InvalidPropertiesFormatException {
+        if (Properties.installUpToVersion() == null) {
             throw new InvalidPropertiesFormatException("No version to install was provided! Use flag [-latest] to install to latest " +
                     "version or flag [-version=X.Y.Z] to install up to a specific version");
         }

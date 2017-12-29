@@ -1,9 +1,11 @@
 package versions;
 
+import java.util.Arrays;
+
 public class Version implements Comparable<Version> {
-    private int major;
-    private int minor;
-    private int revision;
+    private final int major;
+    private final int minor;
+    private final int revision;
 
     private final static int VERSION_DIVISIONS = 3;
 
@@ -28,8 +30,8 @@ public class Version implements Comparable<Version> {
     private int[] parseVersion(String unparsedVersion) {
         String[] splitVersion = unparsedVersion.split("\\.");
         if (splitVersion.length != VERSION_DIVISIONS) {
-            throw new IllegalArgumentException("Version must contain only " + (VERSION_DIVISIONS - 1) + " \".\" characters! " +
-                    "(Must be in the form of 0.0.0). Received: " + splitVersion);
+            throw new IllegalArgumentException("Illegal Version flag received! Must be in the form of 0.0.0. " +
+                    "Alternatively, use -latest to install to latest version. Received: " + unparsedVersion);
         }
         int[] parsedVersion = new int[VERSION_DIVISIONS];
         for (int index = 0; index < splitVersion.length; index++) {

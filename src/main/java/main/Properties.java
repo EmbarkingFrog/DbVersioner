@@ -15,34 +15,41 @@ public class Properties {
     public static Properties INSTANCE;
 
     private static Properties getProperties() {
-        if (INSTANCE == null){
+        if (INSTANCE == null) {
             INSTANCE = new Properties();
         }
         return INSTANCE;
     }
 
-    public static boolean installViews(){
+    public static boolean installViews() {
         return getProperties().views;
     }
-    public static boolean installStoredProcedures(){
+
+    public static boolean installStoredProcedures() {
         return getProperties().storedProcedures;
     }
-    public static boolean installSchemas(){
+
+    public static boolean installSchemas() {
         return getProperties().schemas;
     }
-    public static Version installUpToVersion(){
+
+    public static Version installUpToVersion() {
         return getProperties().version;
     }
-    public static String dbServer(){
+
+    public static String dbServer() {
         return getProperties().dbServer;
     }
-    public static String getUser(){
+
+    public static String getUser() {
         return getProperties().user;
     }
-    public static String getPassword(){
+
+    public static String getPassword() {
         return getProperties().password;
     }
-    public static String getDbName(){
+
+    public static String getDbName() {
         return getProperties().dbName;
     }
 
