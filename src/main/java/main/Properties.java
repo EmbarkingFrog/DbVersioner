@@ -3,16 +3,19 @@ package main;
 import versions.Version;
 
 public class Properties {
-    private boolean schemas;
-    private boolean views;
-    private boolean storedProcedures;
-    private Version version;
+    private boolean updateSchemas;
+    private boolean installViews;
+    private boolean installStoredProcedures;
+    private Version installUpToVersion;
     private String dbServer;
     private String user;
     private String password;
     private String dbName;
 
-    public static Properties INSTANCE;
+    private static Properties INSTANCE;
+
+    private Properties() {
+    }
 
     private static Properties getProperties() {
         if (INSTANCE == null) {
@@ -22,19 +25,19 @@ public class Properties {
     }
 
     public static boolean installViews() {
-        return getProperties().views;
+        return getProperties().installViews;
     }
 
     public static boolean installStoredProcedures() {
-        return getProperties().storedProcedures;
+        return getProperties().installStoredProcedures;
     }
 
     public static boolean installSchemas() {
-        return getProperties().schemas;
+        return getProperties().updateSchemas;
     }
 
     public static Version installUpToVersion() {
-        return getProperties().version;
+        return getProperties().installUpToVersion;
     }
 
     public static String dbServer() {
@@ -54,19 +57,19 @@ public class Properties {
     }
 
     public static void setSchemas(boolean schemas) {
-        getProperties().schemas = schemas;
+        getProperties().updateSchemas = schemas;
     }
 
     public static void setViews(boolean views) {
-        getProperties().views = views;
+        getProperties().installViews = views;
     }
 
     public static void setStoredProcedures(boolean storedProcedures) {
-        getProperties().storedProcedures = storedProcedures;
+        getProperties().installStoredProcedures = storedProcedures;
     }
 
     public static void setVersion(Version version) {
-        getProperties().version = version;
+        getProperties().installUpToVersion = version;
     }
 
     public static void setDbServer(String dbServer) {

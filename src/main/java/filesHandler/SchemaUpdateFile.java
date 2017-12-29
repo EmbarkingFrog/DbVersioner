@@ -1,6 +1,5 @@
 package filesHandler;
 
-import org.apache.logging.log4j.Logger;
 import updateScript.SchemaUpdateScript;
 import versions.Version;
 
@@ -9,10 +8,8 @@ import java.nio.file.Path;
 
 import static filesHandler.FileReadUtils.readSqlFile;
 import static filesHandler.FileReadUtils.removeSqlExtension;
-import static org.apache.logging.log4j.LogManager.getLogger;
 
 public class SchemaUpdateFile extends SchemaUpdateScript {
-    private final static Logger logger = getLogger("SchemaUpdateFile");
 
     /**
      * Returns an instance of SchemaUpdateFile. File name must be in the format of VERSION-SCHEMA-DESCRIPTION.SQL
@@ -22,11 +19,11 @@ public class SchemaUpdateFile extends SchemaUpdateScript {
      *
      * @param path
      */
-    public SchemaUpdateFile(Path path) throws IOException {
+    SchemaUpdateFile(Path path) throws IOException {
         this(path, parseSchema(path), parseDescription(path));
     }
 
-    public SchemaUpdateFile(Path path, String schema, String description) throws IOException {
+    SchemaUpdateFile(Path path, String schema, String description) throws IOException {
         super(description, readSqlFile(path), schema, parseVersion(path));
     }
 

@@ -1,19 +1,12 @@
 package filesHandler;
 
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
-import static org.apache.logging.log4j.LogManager.*;
-
 public class FilesHandler {
-    private final static Logger logger = getLogger("filesHandler");
     private final JSONObject filesIndex;
 
     private final String baseBackupFile;
@@ -75,7 +68,6 @@ public class FilesHandler {
         });
         return files;
     }
-
 
     public SchemaUpdateFile getBaseBackupFile() throws IOException {
         return new SchemaUpdateFile(Paths.get(baseBackupFile));

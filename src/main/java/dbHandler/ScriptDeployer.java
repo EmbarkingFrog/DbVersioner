@@ -29,44 +29,35 @@ public class ScriptDeployer {
             return getConnection();
         } catch (SQLException error) {
             if (error.getSQLState().equals(DATABASE_DOESNT_EXIST_CODE)) {
-                logger.warn("Databse [{}] doesn't exist. ScriptDeployer will now create it.", Properties.getDbName());
+                logger.warn("Database [{}] doesn't exist. ScriptDeployer will now create it.", Properties.getDbName());
                 Connection connection = createDb();
                 try {
                     logger.info("Installing base backup to the newly created DB");
                     installBaseBackup(connection);
-                } catch (Exception e) {
-                    logger.error("Could not restore DB from backup! Deleting the database. See causing exception: ", e);
+                } catch (SQLException | IOException e) {
+                    logger.error("Could not install DB from base backup script! Deleting the database. See causing exception: ", e);
                     try {
                         connection.close();
                         deleteDB();
                     } catch (SQLException e1) {
-                        logger.error("Could not delete the failed DB that was created: [{}]. You will need to" +
-                                " manually delete it! See causing exception: ", Properties.getDbName(), e1);
-                        throw new ScriptDeploymentException(e1);
+                        throw new ScriptDeploymentException(String.format("Could not delete the failed DB that was created: [%s]. You will need to" +
+                                " manually delete it! See causing exception: ", Properties.getDbName()), e1);
                     }
                 }
                 return connection;
             } else {
-                logger.error("Unexpected SQL exception: ", error);
-                throw new ScriptDeploymentException(error);
+                throw new ScriptDeploymentException("Unexpected SQL exception while connecting to DB!", error);
             }
         }
     }
 
-    public void installBaseBackup(Connection connection) throws SQLException, IOException {
-        try {
-            SchemaUpdateFile baseBackupFile = new FilesHandler().getBaseBackupFile();
-            installVersionScript(connection, baseBackupFile);
-        } catch (SQLException e) {
-            logger.error("Could not install base backup!");
-            throw e;
-        } catch (FileNotFoundException e) {
-            logger.error("Could not find backup file!");
-            throw e;
-        }
+    private void installBaseBackup(Connection connection) throws SQLException, IOException {
+        SchemaUpdateFile baseBackupFile = new FilesHandler().getBaseBackupFile();
+        installVersionScript(connection, baseBackupFile);
     }
 
-    public Version updateSchemasUpToVersion(Connection connection, PriorityQueue<? extends SchemaUpdateScript> schemaUpdateScripts, Version installUpToVersion)
+    public Version updateSchemasUpToVersion(Connection connection, PriorityQueue<? extends SchemaUpdateScript> schemaUpdateScripts,
+                                            Version installUpToVersion)
             throws SQLException, IOException {
         Version dbStartingVersion = getDbCurrentVersion(connection);
         Version latestInstalled = dbStartingVersion;
@@ -77,10 +68,10 @@ public class ScriptDeployer {
                     installVersionScript(connection, currentScript);
                     latestInstalled = currentScript.getVersion();
                 } else {
-                    logger.info("Script [{}] is skipped since install up to [{}] was requested", currentScript.getDescription(), installUpToVersion);
+                    logger.info("Script [{}] is skipped since install up to [{}] was requested", currentScript, installUpToVersion);
                 }
             } else {
-                logger.info("Script [{}] is skipped because DB version [{}] is equal or greater", currentScript.getDescription(), latestInstalled);
+                logger.info("Script [{}] is skipped because DB version [{}] is equal or greater", currentScript, latestInstalled);
             }
         }
 
@@ -108,7 +99,7 @@ public class ScriptDeployer {
         }
     }
 
-    private void deleteDB() {
+    private void deleteDB() throws SQLException {
         String databaseToDelete = Properties.getDbName();
         logger.info("Deleting database [{}]", databaseToDelete);
         try (Connection adminConnection = getConnectionToPostgresSchema();
@@ -118,24 +109,21 @@ public class ScriptDeployer {
         } catch (SQLException e) {
             logger.error("Could not connect to postgres database to delete {}! You might need to manually delete it. See causing exception: ",
                     databaseToDelete, e);
-            System.exit(-1);
+            throw e;
         }
     }
 
-    private Connection createDb() {
+    private Connection createDb() throws ScriptDeploymentException {
         String databaseToCreate = Properties.getDbName();
         logger.info("Creating database [{}]", databaseToCreate);
         try (Connection adminConnection = getConnectionToPostgresSchema();
              Statement statement = adminConnection.createStatement()) {
             statement.executeUpdate("CREATE DATABASE " + databaseToCreate);
-            logger.info("Successfully created new databse: [{}]. Connecting to it...", databaseToCreate);
+            logger.info("Successfully created new database: [{}]. Connecting to it...", databaseToCreate);
             return getConnection();
         } catch (SQLException e) {
-            logger.error("Could not connect to postgres database to create [{}]. See causing exception: ",
-                    databaseToCreate, e);
-            System.exit(-1);
+            throw new ScriptDeploymentException("Could not connect to postgres database to create [{}]. See causing exception: ", e);
         }
-        throw new RuntimeException("Code shouldn't reach here!");
     }
 
     private void installVersionScript(Connection connection, SchemaUpdateScript schemaUpdateScript) throws IOException, SQLException {
@@ -149,7 +137,7 @@ public class ScriptDeployer {
     }
 
     private void executeScript(Connection connection, UpdateScript script) throws IOException, SQLException {
-        logger.info("Installing script: [{}]", script.getDescription());
+        logger.info("Installing script: [{}]", script);
         Statement statement = connection.createStatement();
         statement.execute(script.getScript());
         statement.close();

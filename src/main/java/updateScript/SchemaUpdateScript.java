@@ -6,10 +6,6 @@ public class SchemaUpdateScript extends UpdateScript implements Comparable<Schem
     private String schema;
     private Version version;
 
-    private SchemaUpdateScript(String description, String contents) {
-        super(description, contents);
-    }
-
     public SchemaUpdateScript(String description, String contents, String schema, Version version) {
         super(description, contents);
         this.schema = schema;
@@ -26,5 +22,11 @@ public class SchemaUpdateScript extends UpdateScript implements Comparable<Schem
 
     public String getSchema() {
         return schema;
+    }
+
+    @Override
+    public String toString(){
+        return String.format("version [%s], schema [%s], description [%s]",
+                this.getVersion(), this.getSchema(), this.getDescription());
     }
 }

@@ -30,7 +30,7 @@ public class DbVersioner {
         try {
             filesHandler = new FilesHandler();
         } catch (IOException e) {
-            e.printStackTrace();
+            handleError("Couldn't read script update files, see causing exception: ", e);
         }
 
         Version version = null;
@@ -43,7 +43,7 @@ public class DbVersioner {
         try {
             scriptDeployer.cleanViewsAndStoredProcedures(connection);
         } catch (SQLException e) {
-            handleError("Could not clean views and functions! See causing exception: ", e);
+            handleError("Could not clean views and stored procedures! See causing exception: ", e);
         }
 
         if (Properties.installSchemas()) {

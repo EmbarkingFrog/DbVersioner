@@ -1,7 +1,5 @@
 package versions;
 
-import java.util.Arrays;
-
 public class Version implements Comparable<Version> {
     private final int major;
     private final int minor;
@@ -36,7 +34,12 @@ public class Version implements Comparable<Version> {
         int[] parsedVersion = new int[VERSION_DIVISIONS];
         for (int index = 0; index < splitVersion.length; index++) {
             try {
-                parsedVersion[index] = Integer.parseInt(splitVersion[index]);
+                int versionPart = Integer.parseInt(splitVersion[index]);
+                if (versionPart < 0) {
+                    throw new IllegalArgumentException("Version must contain positive numbers only. (Good example: 1.1.1, bad example: 1.-1.2." +
+                            "Received: " + versionPart);
+                }
+                parsedVersion[index] = versionPart;
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Version contains something that's not a number (" + splitVersion[index] + ")! Received: " + unparsedVersion, e);
             }
@@ -48,7 +51,6 @@ public class Version implements Comparable<Version> {
     public String toString() {
         if (major == minor && minor == revision && revision == Integer.MAX_VALUE) {
             return "latest";
-        }
-        return major + "." + minor + "." + revision;
+        } else return major + "." + minor + "." + revision;
     }
 }

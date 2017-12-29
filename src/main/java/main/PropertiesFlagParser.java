@@ -70,7 +70,7 @@ public class PropertiesFlagParser {
             throw new InvalidPropertiesFormatException("Database name not provided! Make sure to use the flag: [-db=YOURDBNAME]");
         }
         if (Properties.dbServer() == null) {
-            throw new InvalidPropertiesFormatException("Database server not provided! Make sure to use the flag: [-server=IP:PORT]");
+            throw new InvalidPropertiesFormatException("Database server not provided! Make sure to use the flag: [-server=HOST:PORT]");
         }
         if (Properties.getUser() == null) {
             throw new InvalidPropertiesFormatException("Database user-name not provided! Make sure to use the flag [-u=YOURUSERNAME]");

@@ -1,14 +1,8 @@
 package updateScript;
 
-import org.apache.logging.log4j.Logger;
-
-import static org.apache.logging.log4j.LogManager.getLogger;
-
 public class UpdateScript {
-    private final static Logger logger = getLogger("UpdateScript");
-
-    String description;
-    String script;
+    private String description;
+    private String script;
 
     public UpdateScript(String description, String contents) {
         this.description = description;
@@ -21,5 +15,10 @@ public class UpdateScript {
 
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String toString() {
+        return getDescription();
     }
 }
