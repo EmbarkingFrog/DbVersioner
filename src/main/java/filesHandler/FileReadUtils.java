@@ -1,6 +1,7 @@
 package filesHandler;
 
 import org.apache.logging.log4j.Logger;
+import versions.Version;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -55,5 +56,22 @@ class FileReadUtils {
         String fileNameWithoutExtension = pathString.substring(0, pathString.length() - 4);
         logger.debug("File [{}] without extension is [{}]", pathString, fileNameWithoutExtension);
         return fileNameWithoutExtension;
+    }
+
+    static Version parseVersion(Path path) {
+        return new Version(getHyphenatedStringPart(removeSqlExtension(path.getFileName()), 0));
+    }
+
+    static String parseSchema(Path path) {
+        return getHyphenatedStringPart(removeSqlExtension(path.getFileName()), 1);
+    }
+
+    static String parseDescription(Path path) {
+        return getHyphenatedStringPart(removeSqlExtension(path.getFileName()), 2);
+    }
+
+    private static String getHyphenatedStringPart(String string, int partIndex) {
+        String[] stringParts = string.split("-");
+        return stringParts[partIndex];
     }
 }

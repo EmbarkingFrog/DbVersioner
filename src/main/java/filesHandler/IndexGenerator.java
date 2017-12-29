@@ -2,8 +2,8 @@ package filesHandler;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.json.JSONArray;
 import org.json.JSONObject;
+import versions.Version;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -12,6 +12,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
+
+import static filesHandler.FileReadUtils.parseVersion;
 
 public class IndexGenerator {
     private final static String rootFolder = "/sqlFiles";
@@ -28,7 +33,7 @@ public class IndexGenerator {
             Path rootSqlFilesFolder = getRootFolder();
 
             filesIndex.put("base_backup", baseBackupFile);
-            addToFileIndex(filesIndex, rootSqlFilesFolder, "schemas");
+            addSortedSchemasToIndex(filesIndex, rootSqlFilesFolder);
             addToFileIndex(filesIndex, rootSqlFilesFolder, "storedProcedures");
             addToFileIndex(filesIndex, rootSqlFilesFolder, "views");
 
@@ -42,6 +47,42 @@ public class IndexGenerator {
         } catch (IOException e) {
             throw new MojoFailureException("Couldn't access subfolder for indexing files!", e);
         }
+    }
+
+    private void addSortedSchemasToIndex(JSONObject filesIndex, Path rootSqlFilesFolder) throws IOException {
+        class VersionedPath implements Comparable<VersionedPath> {
+            Path path;
+            Version version;
+
+            VersionedPath(Path p) {
+                this.path = p;
+                version = parseVersion(p);
+            }
+
+
+            @Override
+            public int compareTo(VersionedPath otherVersionedPath) {
+                return this.version.compareTo(otherVersionedPath.version);
+            }
+
+            @Override
+            public String toString() {
+                return this.path.toString();
+            }
+        }
+        List<Path> schemaPaths = getFilesInFolder(rootSqlFilesFolder.resolve("schemas"));
+        TreeSet<VersionedPath> sortedSchemas = new TreeSet<>();
+        for (Path schemaPath : schemaPaths) {
+            VersionedPath schemaVersionedPath = new VersionedPath(schemaPath);
+            for (VersionedPath schemaVersionedPathInTree : sortedSchemas) {
+                if (schemaVersionedPath.compareTo(schemaVersionedPathInTree) == 0) {
+                    throw new IllegalArgumentException(String.format("There are two schema update scripts with the same version: [%s], [%s]",
+                            schemaVersionedPath, schemaVersionedPathInTree));
+                }
+            }
+            sortedSchemas.add(schemaVersionedPath);
+        }
+        filesIndex.put("schemas", sortedSchemas);
     }
 
     private void writeIndexFile(JSONObject filesIndex, Path rootSqlFilesFolder) throws IOException {
@@ -63,15 +104,15 @@ public class IndexGenerator {
         return firstBackupPath.getParent();
     }
 
-    private static JSONArray getFilesInFolder(Path subFolder) throws IOException {
-        JSONArray filesArray = new JSONArray();
+    private static List<Path> getFilesInFolder(Path subFolder) throws IOException {
+        List<Path> filesInFolder = new ArrayList<>();
         if (Files.exists(subFolder)) {
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(subFolder)) {
                 for (Path child : stream) {
-                    filesArray.put(rootFolder + "/" + subFolder.getFileName() + "/" + child.getFileName());
+                    filesInFolder.add(Paths.get(rootFolder + "/" + subFolder.getFileName() + "/" + child.getFileName()));
                 }
             }
         }
-        return filesArray;
+        return filesInFolder;
     }
 }

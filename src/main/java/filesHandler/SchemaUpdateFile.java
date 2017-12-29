@@ -6,8 +6,7 @@ import versions.Version;
 import java.io.*;
 import java.nio.file.Path;
 
-import static filesHandler.FileReadUtils.readSqlFile;
-import static filesHandler.FileReadUtils.removeSqlExtension;
+import static filesHandler.FileReadUtils.*;
 
 public class SchemaUpdateFile extends SchemaUpdateScript {
 
@@ -25,23 +24,6 @@ public class SchemaUpdateFile extends SchemaUpdateScript {
 
     SchemaUpdateFile(Path path, String schema, String description) throws IOException {
         super(description, readSqlFile(path), schema, parseVersion(path));
-    }
-
-    private static Version parseVersion(Path path) {
-        return new Version(getHyphenatedStringPart(removeSqlExtension(path.getFileName()), 0));
-    }
-
-    private static String parseSchema(Path path) {
-        return getHyphenatedStringPart(removeSqlExtension(path.getFileName()), 1);
-    }
-
-    private static String parseDescription(Path path) {
-        return getHyphenatedStringPart(removeSqlExtension(path.getFileName()), 2);
-    }
-
-    private static String getHyphenatedStringPart(String string, int partIndex) {
-        String[] stringParts = string.split("-");
-        return stringParts[partIndex];
     }
 
 }
