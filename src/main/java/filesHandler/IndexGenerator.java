@@ -2,6 +2,7 @@ package filesHandler;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import versions.Version;
 
@@ -59,10 +60,24 @@ public class IndexGenerator {
                 version = parseVersion(p);
             }
 
-
             @Override
             public int compareTo(VersionedPath otherVersionedPath) {
                 return this.version.compareTo(otherVersionedPath.version);
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+
+                VersionedPath that = (VersionedPath) o;
+
+                return version.equals(that.version);
+            }
+
+            @Override
+            public int hashCode() {
+                return version.hashCode();
             }
 
             @Override
@@ -71,18 +86,21 @@ public class IndexGenerator {
             }
         }
         List<Path> schemaPaths = getFilesInFolder(rootSqlFilesFolder.resolve("schemas"));
+
         TreeSet<VersionedPath> sortedSchemas = new TreeSet<>();
         for (Path schemaPath : schemaPaths) {
             VersionedPath schemaVersionedPath = new VersionedPath(schemaPath);
-            for (VersionedPath schemaVersionedPathInTree : sortedSchemas) {
-                if (schemaVersionedPath.compareTo(schemaVersionedPathInTree) == 0) {
-                    throw new IllegalArgumentException(String.format("There are two schema update scripts with the same version: [%s], [%s]",
-                            schemaVersionedPath, schemaVersionedPathInTree));
+                if (sortedSchemas.contains(schemaVersionedPath)) {
+                    throw new IllegalArgumentException(String.format("Can't add [%s], a schema script with this version already exists!",
+                            schemaVersionedPath ));
                 }
-            }
             sortedSchemas.add(schemaVersionedPath);
         }
-        filesIndex.put("schemas", sortedSchemas);
+
+        JSONArray schemasJsonArray = new JSONArray();
+        sortedSchemas.forEach(s -> schemasJsonArray.put(s.path));
+
+        filesIndex.put("schemas", schemasJsonArray);
     }
 
     private void writeIndexFile(JSONObject filesIndex, Path rootSqlFilesFolder) throws IOException {

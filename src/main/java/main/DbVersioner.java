@@ -33,9 +33,11 @@ public class DbVersioner {
             handleError("Couldn't read script update files, see causing exception: ", e);
         }
 
-        Version version = null;
+        Version dbStartingVersion = null;
+        Version dbCurrentVersion = null;
         try {
-            version = scriptDeployer.getDbCurrentVersion(connection);
+            dbStartingVersion = scriptDeployer.getDbCurrentVersion(connection);
+            dbCurrentVersion = dbStartingVersion;
         } catch (SQLException e) {
             handleError("Could not verify current DB version! Does it have a versions.versions table? See causing exception: ", e);
         }
@@ -47,12 +49,29 @@ public class DbVersioner {
         }
 
         if (Properties.installSchemas()) {
-            logger.info("Installing schemas, up to version {}", Properties.installUpToVersion());
             try {
                 PriorityQueue<SchemaUpdateFile> updateFiles = filesHandler.getSchemaUpdateFiles();
-                version = scriptDeployer.updateSchemasUpToVersion(connection, updateFiles, Properties.installUpToVersion());
-            } catch (SQLException | IOException e) {
-                handleError("Could not install schemas! See causing exception: ", e);
+                Version mostRecentScriptVersionAvailable = findMostRecentVersionAvailable(updateFiles);
+
+                if (dbStartingVersion.compareTo(Properties.installUpToVersion()) >= 0) {
+                    logger.info("Skipping schema installation since DB version [{}] is already equal or greater to requested version [{}]",
+                            dbStartingVersion, Properties.installUpToVersion());
+
+                } else if (dbStartingVersion.compareTo(mostRecentScriptVersionAvailable) >= 0) {
+                    logger.info("Skipping schema installation since DB version [{}] is already equal or greater to most recent script file [{}]",
+                            dbStartingVersion, mostRecentScriptVersionAvailable);
+
+                } else {
+                    logger.info("Installing schemas, up to version [{}]", Properties.installUpToVersion());
+                    try {
+                        dbCurrentVersion = scriptDeployer.updateSchemasUpToVersion(connection, updateFiles, Properties.installUpToVersion());
+                        logger.info("DB schemas were successfully updated from version [{}] to version [{}]!", dbStartingVersion, dbCurrentVersion);
+                    } catch (SQLException e) {
+                        handleError("Could not install schemas! See causing exception: ", e);
+                    }
+                }
+            } catch (IOException e) {
+                handleError("Error while reading update script files! See causing exception: ", e);
             }
         }
 
@@ -63,6 +82,7 @@ public class DbVersioner {
             } catch (SQLException | IOException e) {
                 handleError("Could not install views! See causing exception: ", e);
             }
+            logger.info("Views were successfully installed!");
         }
 
         if (Properties.installStoredProcedures()) {
@@ -72,9 +92,23 @@ public class DbVersioner {
             } catch (SQLException | IOException e) {
                 handleError("Could not install stored procedures! See causing exception: ", e);
             }
+            logger.info("Stored procedures were successfully installed!");
         }
 
-        logger.info("Installation successfully completed! The DB is now version: [{}]", version);
+        logger.info("Installation successfully completed! The DB is now version: [{}]", dbCurrentVersion);
+    }
+
+    private static Version findMostRecentVersionAvailable(PriorityQueue<SchemaUpdateFile> updateFiles) {
+        PriorityQueue<SchemaUpdateFile> queueCopy = new PriorityQueue<>(updateFiles);
+
+        Version mostRecent = null;
+        while (queueCopy.peek() != null) {
+            mostRecent = queueCopy.poll().getVersion();
+        }
+        if (mostRecent == null) {
+            handleError("No update scripts available! Check update scripts folder for correctly versioned files!");
+        }
+        return mostRecent;
     }
 
     private static void initializeProperties(String[] args) {
@@ -87,6 +121,11 @@ public class DbVersioner {
 
     private static void handleError(String message, Throwable e) {
         logger.error(message, e);
+        System.exit(-1);
+    }
+
+    private static void handleError(String message) {
+        logger.error(message);
         System.exit(-1);
     }
 }

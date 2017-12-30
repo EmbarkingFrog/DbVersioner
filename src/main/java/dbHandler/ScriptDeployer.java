@@ -61,7 +61,7 @@ public class ScriptDeployer {
             throws SQLException, IOException {
         Version dbStartingVersion = getDbCurrentVersion(connection);
         Version latestInstalled = dbStartingVersion;
-        logger.info("DB current version is [{}]. Updating DB to version [{}]", dbStartingVersion, installUpToVersion);
+        logger.debug("DB current version is [{}]. Updating DB to version [{}]", dbStartingVersion, installUpToVersion);
         for (SchemaUpdateScript currentScript : schemaUpdateScripts) {
             if (currentScript.getVersion().compareTo(latestInstalled) > 0) {
                 if (currentScript.getVersion().compareTo(installUpToVersion) <= 0) {
@@ -74,8 +74,6 @@ public class ScriptDeployer {
                 logger.info("Script [{}] is skipped because DB version [{}] is equal or greater", currentScript, latestInstalled);
             }
         }
-
-        logger.info("DB was successfully updated from version [{}] to version {}!", dbStartingVersion, latestInstalled);
 
         return latestInstalled;
     }
@@ -127,6 +125,7 @@ public class ScriptDeployer {
     }
 
     private void installVersionScript(Connection connection, SchemaUpdateScript schemaUpdateScript) throws IOException, SQLException {
+        logger.info("Installing schema update script [{}]", schemaUpdateScript);
         Statement statement = connection.createStatement();
         statement.execute(schemaUpdateScript.getScript());
         String INSERT_VERSION_TO_VERSION_TABLE_QUERY = String.format(

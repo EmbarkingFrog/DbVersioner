@@ -26,10 +26,17 @@ public class Version implements Comparable<Version> {
     }
 
     private int[] parseVersion(String unparsedVersion) {
+        if (unparsedVersion.compareToIgnoreCase("latest") == 0){
+            int[] latestVersion = new int[3];
+            latestVersion[0] = Integer.MAX_VALUE;
+            latestVersion[1] = Integer.MAX_VALUE;
+            latestVersion[2] = Integer.MAX_VALUE;
+            return latestVersion;
+        }
         String[] splitVersion = unparsedVersion.split("\\.");
         if (splitVersion.length != VERSION_DIVISIONS) {
-            throw new IllegalArgumentException("Illegal Version flag received! Must be in the form of 0.0.0. " +
-                    "Alternatively, use -latest to install to latest version. Received: " + unparsedVersion);
+            throw new IllegalArgumentException("Illegal Version numbers received! Must be in the form of [0.0.0], or [latest]. Received: "
+                    + unparsedVersion);
         }
         int[] parsedVersion = new int[VERSION_DIVISIONS];
         for (int index = 0; index < splitVersion.length; index++) {
@@ -45,6 +52,26 @@ public class Version implements Comparable<Version> {
             }
         }
         return parsedVersion;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Version version = (Version) o;
+
+        if (major != version.major) return false;
+        if (minor != version.minor) return false;
+        return revision == version.revision;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = major;
+        result = 31 * result + minor;
+        result = 31 * result + revision;
+        return result;
     }
 
     @Override
