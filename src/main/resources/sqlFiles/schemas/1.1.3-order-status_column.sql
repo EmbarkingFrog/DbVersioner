@@ -1,0 +1,1 @@
+alter table orders.orders add column status text;

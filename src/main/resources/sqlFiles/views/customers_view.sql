@@ -4,7 +4,7 @@
 
 CREATE OR REPLACE VIEW customers.customers_view AS
  SELECT customers.name,
-    customers.phone
+    customers.phone as p
    FROM customers.customers;
 
 ALTER TABLE customers.customers_view
