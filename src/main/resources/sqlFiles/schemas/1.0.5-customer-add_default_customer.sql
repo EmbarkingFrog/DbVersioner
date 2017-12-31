@@ -1,0 +1,1 @@
+insert into customers.customers (name, phone, description) values ('1', '2', '3');

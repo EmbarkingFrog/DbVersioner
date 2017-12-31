@@ -1,0 +1,1 @@
+alter table customers.customers add column description character varying;
