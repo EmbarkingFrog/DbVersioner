@@ -50,17 +50,31 @@ public class PropertiesFlagParser {
 
     private static void setPropertiesAccordingToFlags(String[] args) throws InvalidPropertiesFormatException {
         for (String arg : args) {
-            String[] splitArg = arg.split("=");
-            for (PossibleProperties possibleProperty : PossibleProperties.values()) {
-                if (splitArg[0].compareToIgnoreCase(possibleProperty.flag) == 0) {
-                    if (splitArg.length == 2) {
-                        possibleProperty.setter.accept(splitArg[1]);
-                    } else if (splitArg.length == 1) {
-                        possibleProperty.setter.accept("");
-                    } else {
-                        throw new InvalidPropertiesFormatException("Property was not defined correctly! Property: " + arg);
-                    }
-                }
+            if (arg.contains("=")) {
+                handleContainesEqualsArg(arg);
+            } else handleArgWithoutEquals(arg);
+        }
+    }
+
+    private static void handleArgWithoutEquals(String arg) {
+        for (PossibleProperties possibleProperty : PossibleProperties.values()){
+            if (arg.compareToIgnoreCase(possibleProperty.flag) == 0) {
+                possibleProperty.setter.accept(arg);
+            }
+        }
+    }
+
+    private static void handleContainesEqualsArg(String arg) throws InvalidPropertiesFormatException {
+        String[] splitArg = arg.split("=");
+        if (splitArg.length == 1){
+            throw new InvalidPropertiesFormatException("Argument with = sign must contain value after the sign! Received: " + arg);
+        }
+        if (splitArg.length > 2){
+            throw new InvalidPropertiesFormatException("Argument must contain only one = sign! Received: " +arg);
+        }
+        for (PossibleProperties possibleProperty : PossibleProperties.values()){
+            if (splitArg[0].compareToIgnoreCase(possibleProperty.flag) == 0){
+                possibleProperty.setter.accept(splitArg[1]);
             }
         }
     }

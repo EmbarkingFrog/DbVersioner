@@ -1,5 +1,6 @@
 package filesHandler;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 import versions.Version;
 
@@ -7,6 +8,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
+import static org.apache.commons.io.FilenameUtils.getName;
 import static org.apache.logging.log4j.LogManager.getLogger;
 import static updateScript.UpdateScriptUtils.isCommentLine;
 
@@ -32,7 +34,7 @@ class FileReadUtils {
     private String nonStaticReadResource(Path path, Predicate<String> filter) throws IOException {
         StringBuilder result = new StringBuilder();
 
-        InputStream in = getClass().getResourceAsStream(path.toString().replace('\\','/'));
+        InputStream in = getClass().getResourceAsStream(path.toString().replace('\\', '/'));
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
         String line;
@@ -47,7 +49,10 @@ class FileReadUtils {
     }
 
     static String removeSqlExtension(Path path) {
-        String pathString = path.toString();
+        return removeSqlExtension(path.toString());
+    }
+
+    static String removeSqlExtension(String pathString) {
         logger.debug("Formatting SchemaUpdateFile {} to be without extension", pathString);
         String sqlExtension = pathString.substring(pathString.length() - 4);
         if (!sqlExtension.toLowerCase().equals(".sql")) {
@@ -59,15 +64,15 @@ class FileReadUtils {
     }
 
     static Version parseVersion(Path path) {
-        return new Version(getHyphenatedStringPart(removeSqlExtension(path.getFileName()), 0));
+        return new Version(getHyphenatedStringPart(removeSqlExtension(getName(path.toString())), 0));
     }
 
     static String parseSchema(Path path) {
-        return getHyphenatedStringPart(removeSqlExtension(path.getFileName()), 1);
+        return getHyphenatedStringPart(removeSqlExtension(getName(path.toString())), 1);
     }
 
     static String parseDescription(Path path) {
-        return getHyphenatedStringPart(removeSqlExtension(path.getFileName()), 2);
+        return getHyphenatedStringPart(removeSqlExtension(getName(path.toString())), 2);
     }
 
     private static String getHyphenatedStringPart(String string, int partIndex) {
