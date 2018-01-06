@@ -95,7 +95,7 @@ public class DbVersioner {
             logger.info("Stored procedures were successfully installed!");
         }
 
-        logger.info("Installation successfully completed! The DB is now version: [{}]", dbCurrentVersion);
+        logger.info("Installation successfully completed! The DB [{}] is now version: [{}]", Properties.getDbName(), dbCurrentVersion);
     }
 
     private static Version findMostRecentVersionAvailable(PriorityQueue<SchemaUpdateFile> updateFiles) {
